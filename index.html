@@ -1,0 +1,394 @@
+
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Study Partner 📚</title>
+
+<style>
+:root {
+  --bg:#f0f8f4; --surface:#fff; --card:#e8f7ef;
+  --text:#20352b; --primary:#167d64; --muted:#527365;
+}
+body.dark {
+  --bg:#101b18; --surface:#1b2b25; --card:#263a32;
+  --text:#f3fff8; --primary:#8ee6bb; --muted:#c2d8cd;
+}
+* { box-sizing:border-box; }
+body {
+  margin:0; padding:14px; font-family:Arial,sans-serif;
+  background:var(--bg); color:var(--text);
+}
+.container { max-width:760px; margin:auto; }
+header,.page {
+  background:var(--surface); padding:18px; border-radius:18px;
+  margin-bottom:15px; box-shadow:0 4px 14px #00000010;
+}
+header { text-align:center; }
+h1,h2 { color:var(--primary); }
+button {
+  background:var(--primary); color:white; border:0;
+  border-radius:10px; padding:11px; cursor:pointer; margin:3px;
+}
+body.dark button { color:#10271c; }
+input,textarea {
+  width:100%; padding:12px; margin:7px 0;
+  border:1px solid #aaa; border-radius:10px;
+  background:var(--surface); color:var(--text);
+}
+nav {
+  display:grid; grid-template-columns:repeat(3,1fr);
+  gap:5px; margin-bottom:15px;
+}
+nav button { font-size:13px; }
+nav button.active { outline:3px solid #86c9a8; }
+.page { display:none; }
+.page.active { display:block; }
+.card {
+  background:var(--card); padding:14px; margin:10px 0;
+  border-radius:13px; overflow-wrap:anywhere;
+}
+.item {
+  display:flex; justify-content:space-between; align-items:center;
+  gap:8px; padding:10px 0; border-bottom:1px solid #aaa;
+}
+.item span { overflow-wrap:anywhere; }
+.danger { background:#b93838; color:white!important; }
+.secondary { background:#71877b; color:white!important; }
+.done { text-decoration:line-through; opacity:.6; }
+.timer {
+  text-align:center; font-size:56px; font-weight:bold;
+  color:var(--primary); margin:20px 0;
+}
+.chat {
+  height:230px; overflow:auto; border:1px solid #aaa;
+  padding:10px; border-radius:12px; margin:10px 0;
+}
+.msg { padding:10px; margin:7px 0; border-radius:10px; overflow-wrap:anywhere; }
+.user { background:var(--card); }
+.bot { background:var(--bg); }
+.muted { color:var(--muted); }
+footer { text-align:center; padding:15px; color:var(--muted); }
+@media(min-width:600px) {
+  nav { grid-template-columns:repeat(5,1fr); }
+}
+</style>
+</head>
+
+<body>
+<div class="container">
+
+<header>
+  <h1>আমার স্টাডি পার্টনার 📚</h1>
+  <p>আমার পড়া, আমার ভবিষ্যৎ 💚</p>
+  <button id="themeBtn" onclick="toggleDark()">🌙 Dark Mode</button>
+</header>
+
+<nav>
+  <button class="active" onclick="showPage('home',this)">🏠 Home</button>
+  <button onclick="showPage('routine',this)">📚 Routine</button>
+  <button onclick="showPage('timer',this)">⏱️ Timer</button>
+  <button onclick="showPage('tasks',this)">✅ Tasks</button>
+  <button onclick="showPage('ai',this)">🤖 AI Assistant</button>
+</nav>
+
+<main>
+<section id="home" class="page active">
+  <h2>🏠 Dashboard</h2>
+  <div class="card">
+    <h3>💚 স্বাগতম!</h3>
+    <p>আজকের ছোট্ট প্রচেষ্টাই আগামীকালের বড় সাফল্য।</p>
+  </div>
+  <div class="card">
+    <h3>🎯 আজকের অগ্রগতি</h3>
+    <p id="progressText">এখনও কোনো কাজ যোগ করা হয়নি।</p>
+    <progress id="progress" value="0" max="100" style="width:100%"></progress>
+  </div>
+  <div class="card">
+    <h3>📌 আজকের কাজ</h3>
+    <p id="taskSummary">কাজ যোগ করে শুরু করো!</p>
+    <button onclick="showPage('tasks')">কাজ যোগ করো</button>
+  </div>
+  <div class="card">
+    <h3>📚 পড়াশোনার মন্ত্র</h3>
+    <p>মনোযোগ দিয়ে পড়ো, বিরতি নাও, আবার শুরু করো!</p>
+  </div>
+</section>
+
+<section id="routine" class="page">
+  <h2>📚 আমার পড়ার রুটিন</h2>
+  <form id="routineForm">
+    <label>সময়</label>
+    <input id="rTime" placeholder="যেমন: সকাল ৭টা" required>
+    <label>বিষয় বা কাজ</label>
+    <input id="rSubject" placeholder="যেমন: পদার্থবিজ্ঞান" required>
+    <label>নোট</label>
+    <textarea id="rNote" placeholder="কোন অধ্যায় পড়বে?"></textarea>
+    <button type="submit">➕ রুটিন যোগ করো</button>
+  </form>
+  <div id="routineList"></div>
+</section>
+
+<section id="timer" class="page">
+  <h2>⏱️ Study Timer</h2>
+  <p class="muted">২৫ মিনিট পড়ো, তারপর ৫ মিনিট বিরতি নাও।</p>
+  <div class="card">
+    <h3 id="timerMode" style="text-align:center">📚 পড়ার সময়</h3>
+    <div class="timer" id="clock">25:00</div>
+    <div style="text-align:center">
+      <button id="startBtn" onclick="startTimer()">▶️ শুরু</button>
+      <button class="secondary" onclick="pauseTimer()">⏸️ থামাও</button>
+      <button class="danger" onclick="resetTimer()">↻ রিসেট</button>
+      <hr>
+      <button onclick="setMode('study')">📚 ২৫ মিনিট পড়া</button>
+      <button onclick="setMode('break')">☕ ৫ মিনিট বিরতি</button>
+    </div>
+    <p id="timerMessage" class="muted">শুরু করতে বাটনে চাপ দাও।</p>
+  </div>
+</section>
+
+<section id="tasks" class="page">
+  <h2>✅ আজকের To-Do List</h2>
+  <form id="taskForm">
+    <input id="taskInput" placeholder="আজ কী পড়বে?" required>
+    <button type="submit">➕ কাজ যোগ করো</button>
+  </form>
+  <div>
+    <button class="secondary" onclick="filterTasks('all')">সব</button>
+    <button class="secondary" onclick="filterTasks('active')">বাকি</button>
+    <button class="secondary" onclick="filterTasks('done')">সম্পন্ন</button>
+  </div>
+  <div id="taskList"></div>
+  <button class="danger" onclick="clearDone()">সম্পন্ন কাজ মুছো</button>
+</section>
+
+<section id="ai" class="page">
+  <h2>🤖 AI Study Assistant</h2>
+  <div class="card">
+    এই চ্যাটটি এখন ডেমো। বাস্তব AI উত্তর পেতে আলাদা নিরাপদ API সংযোগ প্রয়োজন।
+  </div>
+  <div class="chat" id="chatBox">
+    <div class="msg bot">স্বাগতম! 😊 তোমার পড়াশোনার প্রশ্ন লিখে পাঠাও।</div>
+  </div>
+  <form id="chatForm">
+    <textarea id="chatInput" placeholder="যেমন: ওহমের সূত্র বুঝিয়ে দাও..." required></textarea>
+    <button type="submit">📨 পাঠাও</button>
+  </form>
+</section>
+</main>
+
+<footer>💚 পড়ো মন দিয়ে, গড়ো নিজের ভবিষ্যৎ।</footer>
+</div>
+
+<script>
+function load(key, fallback) {
+  try {
+    const value = localStorage.getItem(key);
+    return value ? JSON.parse(value) : fallback;
+  } catch(e) { return fallback; }
+}
+function save(key, value) {
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+  } catch(e) { alert('তথ্য সংরক্ষণ করা যায়নি।'); }
+}
+
+function showPage(id, btn) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  window.scrollTo(0,0);
+}
+
+function toggleDark() {
+  document.body.classList.toggle('dark');
+  const dark = document.body.classList.contains('dark');
+  document.getElementById('themeBtn').textContent =
+    dark ? '☀️ Light Mode' : '🌙 Dark Mode';
+  save('studyDark', dark);
+}
+if(load('studyDark', false)) {
+  document.body.classList.add('dark');
+  document.getElementById('themeBtn').textContent='☀️ Light Mode';
+}
+
+/* Routine */
+let routines = load('studyRoutines', []);
+function renderRoutines() {
+  const list = document.getElementById('routineList');
+  list.replaceChildren();
+  if(!routines.length) {
+    list.textContent='এখনও কোনো রুটিন যোগ করা হয়নি।';
+    return;
+  }
+  routines.forEach((r,i) => {
+    const card=document.createElement('div');
+    card.className='card';
+    const title=document.createElement('h3');
+    title.textContent='🕒 '+r.time+' — '+r.subject;
+    const note=document.createElement('p');
+    note.textContent=r.note || 'নোট নেই';
+    const del=document.createElement('button');
+    del.className='danger';
+    del.textContent='🗑️ মুছো';
+    del.onclick=()=>{
+      routines.splice(i,1);
+      save('studyRoutines',routines);
+      renderRoutines();
+    };
+    card.append(title,note,del);
+    list.appendChild(card);
+  });
+}
+document.getElementById('routineForm').addEventListener('submit',function(e){
+  e.preventDefault();
+  routines.push({
+    time:document.getElementById('rTime').value.trim(),
+    subject:document.getElementById('rSubject').value.trim(),
+    note:document.getElementById('rNote').value.trim()
+  });
+  save('studyRoutines',routines);
+  this.reset();
+  renderRoutines();
+});
+renderRoutines();
+
+/* To-do list */
+let tasks=load('studyTasks',[]);
+let taskFilter='all';
+function renderTasks() {
+  const list=document.getElementById('taskList');
+  list.replaceChildren();
+  const shown=tasks.map((t,i)=>({t,i})).filter(x=>
+    taskFilter==='all' || (taskFilter==='done' && x.t.done) ||
+    (taskFilter==='active' && !x.t.done)
+  );
+  if(!shown.length) list.textContent='এই তালিকায় কোনো কাজ নেই।';
+  shown.forEach(({t,i})=>{
+    const row=document.createElement('div');
+    row.className='item';
+    const label=document.createElement('span');
+    label.className=t.done?'done':'';
+    const check=document.createElement('input');
+    check.type='checkbox';
+    check.checked=!!t.done;
+    check.style.width='auto';
+    check.onchange=()=>{
+      tasks[i].done=check.checked;
+      save('studyTasks',tasks);
+      renderTasks();
+    };
+    label.append(check,document.createTextNode(' '+t.text));
+    const del=document.createElement('button');
+    del.className='danger';
+    del.textContent='মুছো';
+    del.onclick=()=>{
+      tasks.splice(i,1);
+      save('studyTasks',tasks);
+      renderTasks();
+    };
+    row.append(label,del);
+    list.appendChild(row);
+  });
+  updateDashboard();
+}
+document.getElementById('taskForm').addEventListener('submit',function(e){
+  e.preventDefault();
+  const input=document.getElementById('taskInput');
+  const text=input.value.trim();
+  if(!text) return;
+  tasks.push({text,done:false});
+  save('studyTasks',tasks);
+  input.value='';
+  renderTasks();
+});
+function filterTasks(filter) { taskFilter=filter; renderTasks(); }
+function clearDone() {
+  tasks=tasks.filter(t=>!t.done);
+  save('studyTasks',tasks);
+  renderTasks();
+}
+function updateDashboard() {
+  const done=tasks.filter(t=>t.done).length;
+  const total=tasks.length;
+  const percent=total?Math.round(done/total*100):0;
+  document.getElementById('progressText').textContent=
+    total ? done+' / '+total+' কাজ সম্পন্ন ('+percent+'%)' : 'এখনও কোনো কাজ যোগ করা হয়নি।';
+  document.getElementById('progress').value=percent;
+  document.getElementById('taskSummary').textContent=
+    total ? total+'টি কাজের মধ্যে '+done+'টি সম্পন্ন।' : 'কাজ যোগ করে শুরু করো!';
+}
+renderTasks();
+
+/* Study timer */
+let mode='study', total=1500, remaining=1500, interval=null;
+function renderTimer() {
+  const m=Math.floor(remaining/60);
+  const s=remaining%60;
+  document.getElementById('clock').textContent=
+    String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
+  document.getElementById('timerMode').textContent=
+    mode==='study'?'📚 পড়ার সময়':'☕ বিরতির সময়';
+  document.getElementById('startBtn').disabled=!!interval;
+}
+function setMode(next) {
+  pauseTimer();
+  mode=next;
+  total=(mode==='study'?25:5)*60;
+  remaining=total;
+  document.getElementById('timerMessage').textContent=
+    mode==='study'?'পড়ার জন্য প্রস্তুত!':'একটু বিশ্রাম নাও!';
+  renderTimer();
+}
+function startTimer() {
+  if(interval) return;
+  if(remaining<=0) remaining=total;
+  document.getElementById('timerMessage').textContent='টাইমার চলছে—মনোযোগ ধরে রাখো! 💪';
+  interval=setInterval(()=>{
+    remaining--;
+    if(remaining<=0) {
+      remaining=0;
+      pauseTimer();
+      document.getElementById('timerMessage').textContent=
+        mode==='study'?'পড়ার সময় শেষ! এবার বিরতি নাও। 🎉':'বিরতি শেষ—আবার পড়া শুরু করো! 📚';
+      try { if(navigator.vibrate) navigator.vibrate(200); } catch(e) {}
+    }
+    renderTimer();
+  },1000);
+  renderTimer();
+}
+function pauseTimer() {
+  if(interval) clearInterval(interval);
+  interval=null;
+  renderTimer();
+}
+function resetTimer() {
+  pauseTimer();
+  remaining=total;
+  document.getElementById('timerMessage').textContent='টাইমার রিসেট হয়েছে।';
+  renderTimer();
+}
+renderTimer();
+
+/* Demo chat - not connected to real AI */
+document.getElementById('chatForm').addEventListener('submit',function(e){
+  e.preventDefault();
+  const input=document.getElementById('chatInput');
+  const question=input.value.trim();
+  if(!question) return;
+  const box=document.getElementById('chatBox');
+  const user=document.createElement('div');
+  user.className='msg user';
+  user.textContent=question;
+  const reply=document.createElement('div');
+  reply.className='msg bot';
+  reply.textContent='তোমার প্রশ্নটি লেখা হয়েছে। এই সংস্করণে বাস্তব AI সংযোগ নেই। AI উত্তর চালু করতে নিরাপদ API/backend যুক্ত করতে হবে।';
+  box.append(user,reply);
+  input.value='';
+  box.scrollTop=box.scrollHeight;
+});
+</script>
+</body>
+</html>
